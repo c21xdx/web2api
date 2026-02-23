@@ -102,17 +102,12 @@ def _parse_one_sse_event(payload: str) -> tuple[list[str], str | None, str | Non
         if "text" in obj and obj.get("text"):
             result.append(str(obj["text"]))
         elif kind == "content_block_delta":
+            # 网页端 delta 为 {"type":"text_delta","text":"..."}，正文只由此产出
             delta = obj.get("delta")
             if isinstance(delta, dict) and "text" in delta:
                 result.append(str(delta["text"]))
             elif isinstance(delta, str) and delta:
                 result.append(delta)
-        elif kind == "completion" and "completion" in obj:
-            result.append(str(obj["completion"]))
-        elif kind == "message_delta":
-            delta = obj.get("delta")
-            if isinstance(delta, dict) and delta.get("text"):
-                result.append(str(delta["text"]))
         elif kind == "message_start":
             # API 要求 parent_message_uuid 为标准 UUID，优先取 uuid 再取 id（chatcompl_*）
             msg = obj.get("message")
@@ -135,6 +130,8 @@ def _parse_one_sse_event(payload: str) -> tuple[list[str], str | None, str | Non
                 "content_block_start",
                 "content_block_stop",
                 "message_stop",
+                "message_delta",  # 仅含 stop_reason 等元数据，无正文
+                "message_limit",
             )
             and not result
         ):
