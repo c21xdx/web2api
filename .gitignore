@@ -41,3 +41,5 @@ start_mock.sh
 start_cf.sh
 
 proxy-auth-extension/
+
+db.sqlite3
